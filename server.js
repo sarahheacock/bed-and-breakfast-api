@@ -11,12 +11,12 @@ var logger = require("morgan");
 app.use(logger("dev"));
 app.use(jsonParser());
 
-var port = process.env.PORT || 8080;
+var port = process.env.PORT || 3000;
 //var config = require('./config');
 //mongodb://your-user:your-pass@host:port/db-name
 //mongoose.connect("mongodb://sarahh436:Lucy2003dog@ds117311:8080/bed-and-breakfast-rooms");
 //mongoose.connect(config.db[app.settings.env]);
-mongoose.connect(process.env.MONGOLAB_ORGANGE_URI);
+mongoose.connect('mongodb://heroku_lt50lh59:13d6h6ct41aaqo63l2o3i9qulg@ds163301.mlab.com:63301/heroku_lt50lh59');
 
 
 var db = mongoose.connection;
@@ -59,7 +59,7 @@ app.use(function(err, req, res, next){
   });
 });
 
-var port = process.env.PORT || 3000;
+//var port = process.env.PORT || 3000;
 
 app.listen(port, function(){
   console.log("Express server is listening on port ", port);
