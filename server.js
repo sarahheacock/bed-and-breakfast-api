@@ -10,7 +10,7 @@ var logger = require("morgan");
 
 app.use(logger("dev"));
 app.use(jsonParser());
-mongoose.connect("mongodb://localhost:27017/qa");
+mongoose.connect("mongodb://localhost:27017/hotel");
 
 var db = mongoose.connection;
 
@@ -33,7 +33,7 @@ app.use(function(req, res, next){
 });
 
 //routes
-app.use("/", routes);
+app.use("/hotel", routes);
 
 //catch 404 and forward to error handler
 app.use(function(req, res, next){

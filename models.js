@@ -1,85 +1,36 @@
 'use strict';
 
-var RoomList = require('./data/roomList');
-
-//var AvailableRooms = require('./data/availableRooms');
-
+//var RoomList = require('./data/roomList');
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
-const temp = new Date().toString().split(' ');
-let NOW = new Date(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3] + " 10:00:00").getTime();
-
-var RoomSchema = new Schema({
-  name: String,
-  cost: String,
-  image: String,
-  description: String,
-});
+var RoomList = [
+  {
+    "roomNum": 5,
+    "name": "Lakeview",
+  },
+  {
+    "roomNum": 7,
+    "name": "Brandywine",
+  },
+  {
+    "roomNum": 3,
+    "name": "Lily Pond",
+  }
+];
 
 
 var AvailableSchema = new Schema({
-  date: Number,
-  free: Array
+  date: Date,
+  free: { type: Array, default: RoomList.map(function(room){return room;}) }
 });
 
-var UserSchema = new Schema({
-  email: String,
-  password: String,
-  billing: {
-    line1: String,
-    line2: String,
-    city: String,
-    state: String,
-    zip: String,
-    country: String,
-  },
-  upcoming: [{
-    arrive: Number,
-    depart: Number,
-    guests: Number,
-    room: Number,
-  }]
-});
-
-UserSchema.pre("save", function(next){
-  next();
-});
+// AvailableSchema.pre("save", function(next){
+//   this.sort({date, 1}), function(err, docs) { if(err) res.json(err); });
+// });
 
 
-var Room = mongoose.model("Room", RoomSchema);
-
-Room.find({})
-  .exec(function(err, room){
-    if(err) return next(err);
-    if(room.length === 0){
-      Room.create(RoomList, function(err){
-        if(err) console.log(err);
-      });
-    }
-  });
-
-
-//console.log(AvailableRooms);
 var Available = mongoose.model("Available", AvailableSchema);
 
-Available.find({})
-  .exec(function(err, availableList){
-    //remove expired dates
-    if(err) console.error(err);
-    availableList.forEach(function(available){
-      if(available.date <= NOW){
-        Available.remove({date: available.date}, function(err){
-          console.error(err);
-        });
-      }
-    });
-  });
-
-
-
-var User = mongoose.model("User", UserSchema);
 
 module.exports.Available = Available;
-module.exports.User = User;
-module.exports.Room = Room;
