@@ -16,7 +16,7 @@ var port = process.env.PORT || 8080;
 //mongodb://your-user:your-pass@host:port/db-name
 //mongoose.connect("mongodb://sarahh436:Lucy2003dog@ds117311:8080/bed-and-breakfast-rooms");
 //mongoose.connect(config.db[app.settings.env]);
-mongoose.connect(process.env.MONGO_ORGANGE_URI);
+mongoose.connect(process.env.MONGOLAB_ORGANGE_URI);
 
 
 var db = mongoose.connection;
