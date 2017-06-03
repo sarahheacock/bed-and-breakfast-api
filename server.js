@@ -10,7 +10,10 @@ var logger = require("morgan");
 
 app.use(logger("dev"));
 app.use(jsonParser());
-mongoose.connect("mongodb://localhost:27017/hotel");
+//mongodb://your-user:your-pass@host:port/db-name
+//mongoose.connect("mongodb://sarahh436:Lucy2003dog@host/bed-and-breakfast-rooms");
+mongoose.connect(process.env.MONGODB_URI);
+
 
 var db = mongoose.connection;
 
@@ -52,7 +55,7 @@ app.use(function(err, req, res, next){
   });
 });
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 8080;
 
 app.listen(port, function(){
   console.log("Express server is listening on port ", port);

@@ -43,6 +43,7 @@ router.get("/", function(req, res){
     if(err) res.json(err);
     if(rooms.length !== 0){
       rooms.forEach(function(room, i){
+        //does this also delete my RoomSchema model??
         Available.remove({date: room.date}, function(err){ if(err) res.json(err); });
         if(i === rooms.length - 1){
           Available.find({}, function(err, available){
