@@ -4,9 +4,8 @@ var express = require("express");
 var router = express.Router();
 
 var Available = require("./models").Available;
-//var RoomList = require('./data/roomList');
-
-
+var temp = new Date().toString().split(' ');
+var now = new Date(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3] + " 10:00:00");
 
 router.param("availableID", function(req, res, next, id){
   //Available.findById(id, function(err, doc){
@@ -14,20 +13,20 @@ router.param("availableID", function(req, res, next, id){
 
   Available.findOne({date: compareDate}).exec(function(err, doc){
     if(err) return next(err);
-    //YES, YOU COULD TECHNICALLY CREATE ANY NEW DATE, BUT DATE PICKER SHOULD PREVENT THAT
-    //create new entry
+    //DATE HAS TO BE LATER THAN TODAY AND ,...
+    //create new entry if not found
     if(!doc){
       const entry = new Available({
         date: compareDate,
+        //default free: ...
       });
       req.available = entry;
       entry.save(function(err, entry){
         if(err) return next(err);
-        //res.status(201);
-
         return next();
       });
     }
+    //else return found entry
     else {
       req.available = doc;
       return next();
@@ -35,76 +34,58 @@ router.param("availableID", function(req, res, next, id){
   });
 });
 
-
 //================GETTING AND UPDATING NUMBER OF AVAILABLE ROOMS=============
 router.get("/", function(req, res){
 
-    const temp = new Date().toString().split(' ');
-    const now = new Date(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3] + " 10:00:00");
-
-    // Available.find({}, function(err, available){
-    //   if(available.length >= 1){
-    //     var i = 0;
-    //     while(available[i].date <= now){
-    //       Available.remove({date: available[i].date}, function(err){
-    //         if(err) res.json(err);
-    //       });
-    //       //i++;
-    //     }
-    //     if(available[i].date > now){
-    //       res.json(available);
-    //     }
-    //   }
-    //   else {
-    //     res.json(available);
-    //   }
-    //
-    //   // Available.remove({date: available[1]["date"]}, function(err, room){
-    //   //   console.log(available.length);
-    //   //   res.json(room);
-    //   // });
-    //
-    //
-    // });
-    Available.find({date: {$lt: now}}, function(err, rooms){
-      if(err) res.json(err);
-      if(rooms.length !== 0){
-        rooms.forEach(function(room, i){
-          Available.remove({date: room.date}, function(err){
-            if(err) res.json(err);
+  //note--'rooms' is just a copy, in order to see the manipulated data,
+  //you have to retrieve the data again with Available.find({}...)
+  Available.find({date: {$lt: now}}, function(err, rooms){
+    if(err) res.json(err);
+    if(rooms.length !== 0){
+      rooms.forEach(function(room, i){
+        Available.remove({date: room.date}, function(err){ if(err) res.json(err); });
+        if(i === rooms.length - 1){
+          Available.find({}, function(err, available){
+              if(err) res.json(err);
+              res.json(available);
           });
-          if(i === rooms.length - 1){
-            Available.find({}, function(err, available){
-                if(err) res.json(err);
-                res.json(available);
-            });
-          }
-        });
-      }
-      else {
-        Available.find({}, function(err, available){
-            if(err) res.json(err);
-            res.json(available);
-        });
-      }
-    });
+        }
+      });
+    }
+    else {
+      Available.find({}, function(err, available){
+          if(err) res.json(err);
+          res.json(available);
+      });
+    }
+  });
 });
 
+// availableID is really the date in unix
 router.get("/:availableID", function(req, res, next){
-  //Available.find({}, null, {sort: {date: 1}}, function(err) {
-    //if(err) res.json(err);
-    res.json(req.available);
-  //});
-
+  res.json(req.available);
 });
 
-
-router.post("/:availableID/:roomName/select", function(req, res, next){
-    req.room.select(function(err, available){
+router.post("/:availableID/:roomName/reserve-:dir", function(req, res, next){
+    if(req.params.dir.search(/^(reserve|cancel)$/) === -1){
+      var err = new Error("Not Found");
+      err.status = 404;
+      next(err);
+    }
+    else {
+      req.action = req.params.dir;
+      req.room = req.available.free;
+      next();
+    }
+  },
+  function(req, res, next){
+    req.room.update(req.action, req.params.roomName, function(err, updatedRoom){
       if(err) return next(err);
-      res.json(available);
+      res.json(updatedRoom);
     });
 });
+
+module.exports = router;
 
 // router.get("/:arrive/:depart", function(req, res, next){
 //   //CREATE AN ARRAY OF DATES OBJECTS
@@ -154,6 +135,3 @@ router.post("/:availableID/:roomName/select", function(req, res, next){
 //   });
 // });
 //
-
-
-module.exports = router;
