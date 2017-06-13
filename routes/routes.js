@@ -7,6 +7,7 @@ var Available = require("./models").Available;
 var temp = new Date().toString().split(' ');
 var now = new Date(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3] + " 10:00:00");
 
+
 router.param("availableID", function(req, res, next, id){
   //Available.findById(id, function(err, doc){
   const compareDate = new Date(parseInt(id));
@@ -87,52 +88,3 @@ router.post("/:availableID/:roomName/reserve-:dir", function(req, res, next){
 });
 
 module.exports = router;
-
-// router.get("/:arrive/:depart", function(req, res, next){
-//   //CREATE AN ARRAY OF DATES OBJECTS
-//   let end = parseInt(req.params.depart) - (24*60*60*1000);
-//   const begin = parseInt(req.params.arrive);
-//   let dateArr = [];
-//   var results = [];
-//
-//   while(end >= begin){
-//     dateArr.push(end);
-//     end = new Date(end - (24*60*60*1000));
-//   }
-//
-//   dateArr.forEach(function(arr){
-//     Available.findOne({date: arr})
-//     .exec(function(err, d){
-//       if(err) return next(err);
-//       //IF NOT IN DATABASE, INSERT ENTRY COPY INTO ARRAY, AND INITIALIZE ENTRY IN DATA
-//       console.log("d", d)
-//       if(d === null){
-//         var newDate = new dateEntry(arr);
-//         var available = new Available(newDate);
-//         results.push(newDate);
-//
-//         available.save(function(err, available){
-//           if(err) return next(err);
-//           res.status(201);
-//
-//         });
-//       }
-//       //GET AVAILABLE ENTRY USING DATE, AND INSERT INTO DATE ARRAY
-//       else {
-//         results.push(d);
-//       }
-//       console.log(results.length, dateArr.length, results);
-//       //REDUCE LIST TO WHAT IS AVAILABLE FOR ALL DATES
-//       if(dateArr.length === results.length){
-//
-//         const search = RoomList.map(function(lookup){
-//           const check = results.reduce(function(a,b){return b.free.includes(lookup.room) && a;},true);
-//           //const check = results.reduce(function(a,b){return (b["free"][lookup.room] !== 0) && a;},true);
-//           if (check) return lookup.room;
-//         });
-//         res.json({"rooms": search});
-//       }
-//     })
-//   });
-// });
-//
