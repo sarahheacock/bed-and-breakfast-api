@@ -3,6 +3,7 @@
 var bcrypt = require('bcrypt');
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
+//var Available = require("./models/available").Available;
 
 
 var sortAbout = function(a, b){
@@ -17,6 +18,7 @@ var sortLocalGuide = function(a, b){
   if(b.categorty === a.category) return a.title - b.title;
   return b.category - a.category;
 };
+
 
 
 var HomeSchema = new Schema({
@@ -53,13 +55,14 @@ var RoomSchema = new Schema({
   summary: {type: String, default: "Semiotics pinterest DIY beard, cold-pressed kombucha vape meh flexitarian YOLO cronut subway tile gastropub. Trust fund 90's small batch, skateboard cornhole deep v actually before they sold out thundercats XOXO celiac meditation lomo hexagon tofu. Skateboard air plant narwhal, everyday carry waistcoat pop-up pinterest kitsch. Man bun vape banh mi, palo santo kinfolk sustainable selfies pug meditation kale chips organic PBR&B vegan pok pok. Lomo flexitarian viral yr man braid vexillologist. Bushwick williamsburg bicycle rights, sriracha succulents godard single-origin coffee fam activated charcoal."},
   bold: {type: String, default: "Venmo 8-bit chambray thundercats. Jianbing drinking vinegar vinyl brunch, blog pop-up flexitarian plaid ramps quinoa food truck pok pok man bun taxidermy. "},
   title: {type: String, default: "Title"},
+  number: {type: Number, default: 1}
 })
 
 
 var PageSchema = new Schema({
   username: {
     type: String,
-    unique: true,
+    //unique: true,
     required: true,
     trim: true
   },
@@ -71,7 +74,10 @@ var PageSchema = new Schema({
   foot: {type:[FooterSchema], default:[FooterSchema]},
   about: {type:[AboutSchema], default:[AboutSchema, AboutSchema]},
   rooms: {type:[RoomSchema], default:[RoomSchema]},
-  localGuide: {type:[LocalGuideSchema], default:[LocalGuideSchema]}
+  localGuide: {type:[LocalGuideSchema], default:[LocalGuideSchema]},
+  //available: [Schema.Types.ObjectId]
+  //available: [AvailableSchema]
+  //available: {type:[AvailableSchema], default:[AvailableSchema]}
 });
 
 // authenticate input against database documents
@@ -111,10 +117,13 @@ PageSchema.pre('save', function(next) {
     if(page.about !== undefined) page.about.sort(sortAbout);
     if(page.rooms !== undefined) page.rooms.sort(sortRooms);
     if(page.localGuide !== undefined) page.localGuide.sort(sortLocalGuide);
+    //if(page.available !== undefined) page.available.sort(sortLocalGuide);
     next();
   }
 });
 
 
 var Page = mongoose.model("Page", PageSchema);
+
+
 module.exports.Page = Page;

@@ -4,15 +4,14 @@
 var nodemailer = require('nodemailer');
 var express = require("express");
 
-var userRoutes = express.Router();
+var pageRoutes = express.Router();
 var Page = require("../models/page").Page;
-var jwt = require('jsonwebtoken');
-var bcrypt = require('bcrypt');
+var Available = require("../models/available").Available;
 
 var config = require('../configure/config');
 
 
-userRoutes.param("pageID", function(req, res, next, id){
+pageRoutes.param("pageID", function(req, res, next, id){
   Page.findById(id, function(err, doc){
     if(err) return next(err);
     if(!doc){
@@ -25,7 +24,7 @@ userRoutes.param("pageID", function(req, res, next, id){
   });
 });
 
-userRoutes.param("section", function(req,res,next,id){
+pageRoutes.param("section", function(req,res,next,id){
   req.section = req.page[id];
   if(!req.section){
     var err = new Error("Not Found");
@@ -35,18 +34,9 @@ userRoutes.param("section", function(req,res,next,id){
   next();
 });
 
-userRoutes.param("sectionID", function(req, res, next, id){
-  req.oneSection = req.section.id(id);
-  if(!req.oneSection){
-    var err = new Error("Not Found");
-    err.status = 404;
-    return next(err);
-  }
-  next();
-});
 
 //================MAIL==================================
-userRoutes.post("/sayHello", function(req, res) {
+pageRoutes.post("/sayHello", function(req, res) {
     // Not the movie transporter!
     var transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
@@ -83,16 +73,12 @@ userRoutes.post("/sayHello", function(req, res) {
 
 //===================GET SECTIONS================================
 //get page
-userRoutes.get("/:pageID", function(req, res){
-  res.json(req.page);
-});
 
 //get section
-userRoutes.get("/:pageID/:section", function(req, res){
+pageRoutes.get("/:pageID/:section", function(req, res){
   res.json(req.section);
 });
 
 
 
-
-module.exports = userRoutes;
+module.exports = pageRoutes;

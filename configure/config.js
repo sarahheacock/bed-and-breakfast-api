@@ -7,6 +7,7 @@
 
 module.exports = {
   'secret': 'ovzxujmsfdtjclcw',
+  'super': 'hhcvzbbxfafcaxds',
   'email': 'balanace.test@gmail.com',
   'pass': 'GC9hXE6uQNJyMWJw',
   'to': 'seheacock@bellsouth.net',
