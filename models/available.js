@@ -11,6 +11,15 @@ var FreeSchema = new Schema({
   reserved: {type: Number, default: 0}
 });
 
+FreeSchema.method("update", function(vote, callback){
+  if(vote === "reserve"){
+    this.reserved += 1;
+  }
+  else {
+    this.reserved -= 1;
+  }
+  this.parent().save(callback);
+});
 
 var AvailableSchema = new Schema({
   pageID: Schema.Types.ObjectId,

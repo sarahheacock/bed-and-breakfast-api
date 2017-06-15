@@ -7,46 +7,105 @@ var express = require("express");
 var roomRoutes = express.Router();
 var Page = require("../models/page").Page;
 var Available = require("../models/available").Available;
+var ObjectID = require("mongodb").ObjectID
 var config = require('../configure/config');
 
 
+// roomRoutes.param("date", function(req, res, next, id){
+//
+//     var day = new Date();
+//     day.setHours(1);
+//
+//     Available.remove({ date: {$lt: day}}).exec(function(err){
+//       if(err) return next(err);
+//
+//       Available.find({ pageID: id}).exec(function(err, doc){
+//         if(err){
+//           return next(err);
+//         }
+//         else if(!doc){
+//           err = new Error("Not Found");
+//           err.status = 404;
+//           return next(err);
+//         }
+//         req.available = doc;
+//         next();
+//       })
+//     })
+// });
 
-roomRoutes.param("availableID", function(req, res, next, id){
+roomRoutes.param("date", function(req, res, next, id){
 
     var day = new Date();
-    day.setHours(23);
+    day.setHours(1);
 
-    Available.remove({ date: {$lt: day} }, function(err, result){
+    var arr = id.split("&");
+
+    Available.remove({ date: {$lt: day}}).exec(function(err){
       if(err) return next(err);
-      Available.find({pageID: id}, function(err, doc){
-        if(err) return next(err);
-        if(!doc){
+
+      Available.findOne({ pageID: arr[0], date: new Date(arr[1]) }).exec(function(err, doc){
+        if(err){
+          return next(err);
+        }
+        else if(!doc){
           err = new Error("Not Found");
           err.status = 404;
           return next(err);
         }
-        req.available = doc;
+        req.date = doc;
         next();
-    });
-  });
+      })
+    })
 });
 
-roomRoutes.param("date", function(req, res, next, id){
-  req.oneAvailable = req.available.filter(function(a){
-    return a === id;
-  });
-});
+// roomRoutes.param("date", function(req, res, next, id){
+//
+// });
 
 
 //===================GET ROOMS================================
+// availableID is really the date in unix
+// roomRoutes.get("/", function(req, res, next){
+//   res.json(req.available);
+// });
 
 // availableID is really the date in unix
-roomRoutes.get("/:availableID", function(req, res, next){
-  res.json(req.available);
+roomRoutes.get("/:date", function(req, res, next){
+  res.json(req.date);
+});
+
+//===================ADD DATES===================================
+roomRoutes.post("/", function(req, res, next){
+  //res.json(req.date);
+  Page.findById(req.body.pageID, function(err, doc){
+    if(err) return next(err);
+    if(!doc){
+      err = new Error("Not Found");
+      err.status = 404;
+      return next(err);
+    }
+    var newAvailable = doc.rooms.map(function(d){
+      return {roomID: d._id};
+    });
+    var room = new Available({
+      pageID: req.body.pageID,
+      date: req.body.date,
+      free: newAvailable
+    });
+    room.save(function(err, user){
+      if(err) return next(err);
+      res.status(201);
+      res.json(user);
+    });
+  });
+
 });
 
 //================EDIT ROOMS====================================
-roomRoutes.post("/:availableID/:roomName/reserve-:dir", function(req, res, next){
+roomRoutes.put("/:date/:roomID/reserve-:dir", function(req, res, next){
+    //var arr = req.params.date.split("&");
+
     if(req.params.dir.search(/^(reserve|cancel)$/) === -1){
       var err = new Error("Not Found");
       err.status = 404;
@@ -54,15 +113,26 @@ roomRoutes.post("/:availableID/:roomName/reserve-:dir", function(req, res, next)
     }
     else {
       req.action = req.params.dir;
-      req.room = req.available.free;
+      req.free = req.date.free.map(function(r){
+        if(r.roomID.equals(req.params.roomID)) return r;
+      });
+      console.log(req.free);
       next();
     }
   },
   function(req, res, next){
-    req.room.update(req.action, req.params.roomName, function(err, updatedRoom){
-      if(err) return next(err);
-      res.json(updatedRoom);
-    });
+    if(req.free.length === 0){
+      var err = new Error("roomID not found");
+      err.status = 404;
+      next(err);
+    }
+    else {
+      var free = req.free[0];
+      free.update(req.action, function(err, updatedRoom){
+        if(err) return next(err);
+        res.json(updatedRoom);
+      });
+    }
 });
 
 

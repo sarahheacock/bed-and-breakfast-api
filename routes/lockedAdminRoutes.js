@@ -3,11 +3,53 @@
 var express = require("express");
 
 var lockedAdminRoutes = express.Router();
+
 var Page = require("../models/page").Page;
 var Available = require("../models/available").Available;
+var User = require("../models/user").User;
+var mid = require('../middleware');
+
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcrypt');
 
+
+lockedAdminRoutes.param("page", function(req, res, next, id){
+  User.find({pageID: id}, function(err, user){
+    //console.log(available);
+    if(!user){
+      var err = new Error("No Users");
+      next(err);
+    }
+    else if (err){
+      var err = new Error("Not Found");
+      next(err);
+    }
+    req.users = user.map(function(u){
+      return {
+        email: u.email,
+        billing: u.billing,
+        upcoming: u.upcoming
+      }
+    });
+    return next();
+  });
+});
+
+// lockedAdminRoutes.param("available", function(req, res, next, id){
+//   Available.find({pageID: id}, function(err, user){
+//     //console.log(available);
+//     if(!user){
+//       var err = new Error("No Users");
+//       next(err);
+//     }
+//     else if (err){
+//       var err = new Error("Not Found");
+//       next(err);
+//     }
+//     req.available = user;
+//     return next();
+//   });
+// });
 
 lockedAdminRoutes.param("pageID", function(req, res, next, id){
   Page.findById(id, function(err, doc){
@@ -46,12 +88,22 @@ lockedAdminRoutes.param("sectionID", function(req, res, next, id){
 
 
 //======================EDIT SECTIONS==============================
-lockedAdminRoutes.get("/:pageID/:section", function(req, res){
+//get all users
+lockedAdminRoutes.get("/:pageID/:page/users", mid.authorizeAdmin, function(req, res){
+  res.json(req.users)
+});
+
+// lockedAdminRoutes.get("/:available/available", mid.authorizeAdmin, function(req, res){
+//   res.json(req.available)
+// });
+
+
+lockedAdminRoutes.get("/:pageID/:section", mid.authorizeAdmin, function(req, res){
   res.json(req.section);
 });
 
 //add section
-lockedAdminRoutes.post("/:pageID/:section", function(req, res, next){
+lockedAdminRoutes.post("/:pageID/:section", mid.authorizeAdmin, function(req, res, next){
 
   req.section.push(req.body);
   req.page.save(function(err, page){
@@ -81,14 +133,12 @@ lockedAdminRoutes.post("/:pageID/:section", function(req, res, next){
 });
 
 
-lockedAdminRoutes.get("/:pageID/:section/:sectionID", function(req, res){
+lockedAdminRoutes.get("/:pageID/:section/:sectionID", mid.authorizeAdmin, function(req, res){
   res.json(req.oneSection);
 });
 
-
-
 //edit section
-lockedAdminRoutes.put("/:pageID/:section/:sectionID", function(req, res){
+lockedAdminRoutes.put("/:pageID/:section/:sectionID", mid.authorizeAdmin, function(req, res){
   Object.assign(req.oneSection, req.body);
   req.page.save(function(err, result){
     if(err){
@@ -100,7 +150,7 @@ lockedAdminRoutes.put("/:pageID/:section/:sectionID", function(req, res){
 
 
 //delete section
-lockedAdminRoutes.delete("/:pageID/:section/:sectionID", function(req, res){
+lockedAdminRoutes.delete("/:pageID/:section/:sectionID", mid.authorizeAdmin, function(req, res){
   req.oneSection.remove(function(err){
     req.page.save(function(err, page){
       if(err) return next(err);

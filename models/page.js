@@ -19,18 +19,21 @@ var sortLocalGuide = function(a, b){
   return b.category - a.category;
 };
 
+var makeid = function(){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
+    for( var i=0; i < 16; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
 
 var HomeSchema = new Schema({
   carousel: {type: Array, default: ["https://images.pexels.com/photos/352728/pexels-photo-352728.jpeg?w=940&h=650&auto=compress&cs=tinysrgb", "https://images.pexels.com/photos/210557/pexels-photo-210557.jpeg?w=940&h=650&auto=compress&cs=tinysrgb", "https://images.pexels.com/photos/29410/pexels-photo-29410.jpg?w=940&h=650&auto=compress&cs=tinysrgb"]},
   bold: {type: String, default: "Venmo 8-bit chambray thundercats. Jianbing drinking vinegar vinyl brunch, blog pop-up flexitarian plaid ramps quinoa food truck pok pok man bun taxidermy. "},
   summary: {type: String, default:"Lomo distillery man bun put a bird on it asymmetrical, hoodie air plant authentic narwhal humblebrag food truck pickled edison bulb. Man bun lyft activated charcoal, vegan 90's sartorial stumptown live-edge DIY. Tousled etsy craft beer lumbersexual tacos, hoodie butcher art party readymade. Vice lumbersexual adaptogen vinyl ethical small batch. VHS chicharrones gluten-free, vinyl man bun yr pop-up lyft normcore master cleanse asymmetrical art party. Jean shorts narwhal live-edge, enamel pin meh synth street art brooklyn typewriter. Lo-fi mixtape banjo, lomo gochujang bicycle rights retro scenester butcher single-origin coffee la croix lumbersexual pour-over kombucha."},
 });
-
-var FooterSchema = new Schema({
-  address: {type:String, default: "1640 Gateway Road, Portland, Oregon 97232"},
-  phone: {type:String, default: "555-555-5555"}
-})
 
 var AboutSchema = new Schema({
   image: {type: String, default: "https://images.pexels.com/photos/210499/pexels-photo-210499.jpeg?w=940&h=650&auto=compress&cs=tinysrgb"},
@@ -55,7 +58,8 @@ var RoomSchema = new Schema({
   summary: {type: String, default: "Semiotics pinterest DIY beard, cold-pressed kombucha vape meh flexitarian YOLO cronut subway tile gastropub. Trust fund 90's small batch, skateboard cornhole deep v actually before they sold out thundercats XOXO celiac meditation lomo hexagon tofu. Skateboard air plant narwhal, everyday carry waistcoat pop-up pinterest kitsch. Man bun vape banh mi, palo santo kinfolk sustainable selfies pug meditation kale chips organic PBR&B vegan pok pok. Lomo flexitarian viral yr man braid vexillologist. Bushwick williamsburg bicycle rights, sriracha succulents godard single-origin coffee fam activated charcoal."},
   bold: {type: String, default: "Venmo 8-bit chambray thundercats. Jianbing drinking vinegar vinyl brunch, blog pop-up flexitarian plaid ramps quinoa food truck pok pok man bun taxidermy. "},
   title: {type: String, default: "Title"},
-  number: {type: Number, default: 1}
+  available: {type: Number, default: 1},
+  maximumOccupancy: {type: Number, default: 2}
 })
 
 
@@ -70,14 +74,14 @@ var PageSchema = new Schema({
     type: String,
     required: true
   },
+  adminID: {
+    type: String,
+    default: makeid
+  },
   home: {type:[HomeSchema], default:[HomeSchema]},
-  foot: {type:[FooterSchema], default:[FooterSchema]},
   about: {type:[AboutSchema], default:[AboutSchema, AboutSchema]},
   rooms: {type:[RoomSchema], default:[RoomSchema]},
   localGuide: {type:[LocalGuideSchema], default:[LocalGuideSchema]},
-  //available: [Schema.Types.ObjectId]
-  //available: [AvailableSchema]
-  //available: {type:[AvailableSchema], default:[AvailableSchema]}
 });
 
 // authenticate input against database documents
@@ -110,7 +114,15 @@ PageSchema.pre('save', function(next) {
         return next(err);
       }
       page.password = hash;
-      next();
+
+      // bcrypt.hash(page.adminID, 10, function(err, hash) {
+      //   if (err) {
+      //     return next(err);
+      //   }
+        // page.adminID = hash;
+        next();
+      // })
+
     })
   }
   else{

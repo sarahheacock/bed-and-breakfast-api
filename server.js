@@ -54,11 +54,10 @@ app.use(function(req, res, next){
 
 
 //======ROUTES==============================================
-
+//5942f613d3804004f852cd4c
 //=========================================================
 
 app.get('/setup', function(req, res) {
-
   // create a sample user
   var nick = new Page({
     username: 'Sarah Heacock',
@@ -88,6 +87,7 @@ app.get('/setup', function(req, res) {
   });
 });
 
+
 //========================ADMIN LOGIN====================================
 // POST /login
 adminAuthRoutes.post('/login', function(req, res, next) {
@@ -99,8 +99,8 @@ adminAuthRoutes.post('/login', function(req, res, next) {
         return next(err);
       }
       else {
-        var token = jwt.sign(user._id, app.get('superSecret'), {
-          expiresIn: '1h' //expires in one hour
+        var token = jwt.sign({adminID: user.adminID}, app.get('superSecret'), {
+          expiresIn: '1d' //expires in one hour
         });
 
         res.json({
@@ -146,22 +146,23 @@ adminAuthRoutes.use(function(req, res, next) {
 
 //===========================USER LOGIN=========================================
 // POST /login
-userAuthRoutes.post('/login', function(req, res, next) {
-  if (req.body.username && req.body.password) {
-    User.authenticate(req.body.username, req.body.password, function (error, user) {
+userAuthRoutes.post('/userlogin', function(req, res, next) {
+  if (req.body.email && req.body.password) {
+    User.authenticate(req.body.email, req.body.password, function (error, user) {
       if (error || !user) {
         var err = new Error('Wrong email or password.');
         err.status = 401;
         return next(err);
       }
       else {
-        var token = jwt.sign(user._id, app.get('superSecret'), {
+        var token = jwt.sign({userID: user.userID}, app.get('superSecret'), {
           expiresIn: '1h' //expires in one hour
         });
 
         res.json({
           admin: true,
           id: token,
+          user: user._id
           //pageID: user._id
         });
       }
@@ -201,7 +202,7 @@ userAuthRoutes.use(function(req, res, next) {
 
 //=================ROUTES=======================================
 //ROUTES THAT DO NOT NEED AUTHENTICATION
-app.use('/', pageRoutes);
+app.use('/page', pageRoutes);
 app.use('/rooms', roomRoutes);
 
 // apply the routes to our application with the prefix /api

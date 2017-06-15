@@ -7,6 +7,7 @@ var express = require("express");
 var pageRoutes = express.Router();
 var Page = require("../models/page").Page;
 var Available = require("../models/available").Available;
+var User = require("../models/user").User;
 
 var config = require('../configure/config');
 
@@ -68,8 +69,18 @@ pageRoutes.post("/sayHello", function(req, res) {
             res.json({yo: info.response});
         };
     });
-
 });
+
+//create user
+pageRoutes.post('/user-setup', function(req, res, next) {
+  var user = new User(req.body);
+  user.save(function(err, user){
+    if(err) return next(err);
+    res.status(201);
+    res.json(user);
+  });
+});
+
 
 //===================GET SECTIONS================================
 //get page
