@@ -93,7 +93,7 @@ roomRoutes.post("/", function(req, res, next){
     room.save(function(err, user){
       if(err) return next(err);
       res.status(201);
-      res.json(user);
+      res.json(room);
     });
   });
 
