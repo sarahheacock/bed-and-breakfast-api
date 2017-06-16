@@ -44,7 +44,7 @@ roomRoutes.param("date", function(req, res, next, id){
     Available.remove({ date: {$lt: day}}).exec(function(err){
       if(err) return next(err);
 
-      Available.findOne({ pageID: arr[0], date: new Date(arr[1]) }).exec(function(err, doc){
+      Available.findOne({ pageID: arr[0], date: arr[1] }).exec(function(err, doc){
         if(err){
           return next(err);
         }
