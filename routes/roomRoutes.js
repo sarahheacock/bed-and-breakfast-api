@@ -23,6 +23,8 @@ roomRoutes.param("date", function(req, res, next, id){
 
       Available.findOne({ pageID: arr[0], date: arr[1] }).exec(function(err, doc){
         if(err || !doc){
+          err = new Error("not found");
+          err.status = 404;
           return next(err);
         }
 
