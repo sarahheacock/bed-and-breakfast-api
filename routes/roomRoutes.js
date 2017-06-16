@@ -11,29 +11,6 @@ var ObjectID = require("mongodb").ObjectID
 var config = require('../configure/config');
 
 
-// roomRoutes.param("date", function(req, res, next, id){
-//
-//     var day = new Date();
-//     day.setHours(1);
-//
-//     Available.remove({ date: {$lt: day}}).exec(function(err){
-//       if(err) return next(err);
-//
-//       Available.find({ pageID: id}).exec(function(err, doc){
-//         if(err){
-//           return next(err);
-//         }
-//         else if(!doc){
-//           err = new Error("Not Found");
-//           err.status = 404;
-//           return next(err);
-//         }
-//         req.available = doc;
-//         next();
-//       })
-//     })
-// });
-
 roomRoutes.param("date", function(req, res, next, id){
 
     var day = new Date();
@@ -48,59 +25,74 @@ roomRoutes.param("date", function(req, res, next, id){
         if(err){
           return next(err);
         }
+
         else if(!doc){
-          err = new Error("Date currently not in DB");
-          err.status = 404;
-          return next(err);
+          Page.findById(arr[0], function(err, page){
+            if(err) return next(err);
+            if(!page){
+              err = new Error("Not Found");
+              err.status = 404;
+              return next(err);
+            }
+            var newAvailable = page.rooms.map(function(d){
+              return {roomID: d._id};
+            });
+
+            var available = new Available({
+              pageID: arr[0],
+              date: arr[1],
+              free: newAvailable
+            });
+
+            available.save(function(err, date){
+              if(err) return next(err);
+              //res.status(201);
+              req.date = doc;
+              next();
+            });
+          });
         }
+
         req.date = doc;
         next();
       })
     })
 });
 
-// roomRoutes.param("date", function(req, res, next, id){
-//
-// });
 
 
 //===================GET ROOMS================================
-// availableID is really the date in unix
-// roomRoutes.get("/", function(req, res, next){
-//   res.json(req.available);
-// });
 
-// availableID is really the date in unix
 roomRoutes.get("/:date", function(req, res, next){
-  res.json(req.date);
+    res.json(req.date);
 });
 
 //===================ADD DATES===================================
-roomRoutes.post("/", function(req, res, next){
-  //res.json(req.date);
-  Page.findById(req.body.pageID, function(err, doc){
-    if(err) return next(err);
-    if(!doc){
-      err = new Error("Not Found");
-      err.status = 404;
-      return next(err);
-    }
-    var newAvailable = doc.rooms.map(function(d){
-      return {roomID: d._id};
-    });
-    var room = new Available({
-      pageID: req.body.pageID,
-      date: req.body.date,
-      free: newAvailable
-    });
-    room.save(function(err, user){
-      if(err) return next(err);
-      res.status(201);
-      res.json(user);
-    });
-  });
-
-});
+// roomRoutes.post("/", function(req, res, next){
+//   //res.json(req.date);
+//   Page.findById(req.body.pageID, function(err, doc){
+//     if(err) return next(err);
+//     if(!doc){
+//       err = new Error("Not Found");
+//       err.status = 404;
+//       return next(err);
+//     }
+//     var newAvailable = doc.rooms.map(function(d){
+//       return {roomID: d._id};
+//     });
+//     var room = new Available({
+//       pageID: req.body.pageID,
+//       date: req.body.date,
+//       free: newAvailable
+//     });
+//     room.save(function(err, user){
+//       if(err) return next(err);
+//       res.status(201);
+//       res.json(user);
+//     });
+//   });
+//
+// });
 
 //================EDIT ROOMS====================================
 roomRoutes.put("/:date/:roomID/reserve-:dir", function(req, res, next){
