@@ -4,6 +4,9 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 
+var sortFree = function(a, b){
+  return b.roomID - a.roomID;
+};
 
 var d = new Date();
 var FreeSchema = new Schema({
@@ -27,6 +30,11 @@ var AvailableSchema = new Schema({
   free: {type: [FreeSchema], default: [FreeSchema]}
 });
 
+AvailableSchema.pre('save', function(next) {
+  var available = this;
+  if(available.free !== undefined) available.free.sort(sortFree);
+  next();
+});
 
 // AvailableSchema.post('save', function(next) {
 //   var day = new Date();

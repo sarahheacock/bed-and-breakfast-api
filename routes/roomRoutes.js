@@ -49,7 +49,7 @@ roomRoutes.param("date", function(req, res, next, id){
           return next(err);
         }
         else if(!doc){
-          err = new Error("Not Found");
+          err = new Error("Date currently not in DB");
           err.status = 404;
           return next(err);
         }
