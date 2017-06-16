@@ -27,6 +27,11 @@ roomRoutes.param("date", function(req, res, next, id){
         }
 
         else if(!doc){
+          // if((arr[1].getTime() % (24*60*60*1000)) !== 10*60*60*1000){
+          //   err = new Error("incorrect date format");
+          //   return next(err);
+          // }
+
           Page.findById(arr[0], function(err, page){
             if(err) return next(err);
             if(!page){
@@ -47,7 +52,7 @@ roomRoutes.param("date", function(req, res, next, id){
             available.save(function(err, date){
               if(err) return next(err);
               //res.status(201);
-              req.date = doc;
+              req.date = date;
               next();
             });
           });
