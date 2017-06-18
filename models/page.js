@@ -59,7 +59,8 @@ var RoomSchema = new Schema({
   bold: {type: String, default: "Venmo 8-bit chambray thundercats. Jianbing drinking vinegar vinyl brunch, blog pop-up flexitarian plaid ramps quinoa food truck pok pok man bun taxidermy. "},
   title: {type: String, default: "Title"},
   available: {type: Number, default: 1},
-  maximumOccupancy: {type: Number, default: 2}
+  maximumOccupancy: {type: Number, default: 2},
+  cost: {type: Number, default: 150}
 })
 
 
