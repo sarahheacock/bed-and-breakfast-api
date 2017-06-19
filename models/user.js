@@ -55,6 +55,10 @@ var UserSchema = new Schema({
     required: true,
     trim: true
   },
+  credit: {
+    type: String,
+    trim: true
+  }
   userID: {
     type: String,
     default: makeid
