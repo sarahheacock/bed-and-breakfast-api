@@ -36,8 +36,24 @@ lockedUserRoutes.get('/:userID', mid.authorizeUser, function(req, res, next){
   res.json(req.user);
 });
 
+//edit user info
+lockedUserRoutes.put('/:userID', mid.authorizeUser, function(req, res, next){
+  if(req.body.email){
+    req.user.email = req.body.email;
+  }
+  if(req.body.billing){
+    req.user.billing = req.body.billing;
+  }
+
+  req.user.save(function(err, user){
+    if(err) return next(err);
+    res.status(200);
+    res.json(user);
+  })
+});
+
 //make new reservation
-lockedUserRoutes.post("/:userID/upcoming", function(req, res, next){
+lockedUserRoutes.post("/:userID/upcoming", mid.authorizeUser, function(req, res, next){
   req.user.upcoming.push(req.body);
   req.user.save(function(err, user){
     if(err) return next(err);
@@ -47,12 +63,12 @@ lockedUserRoutes.post("/:userID/upcoming", function(req, res, next){
 });
 
 
-lockedUserRoutes.get("/:userID/upcoming/:upcomingID", function(req, res){
+lockedUserRoutes.get("/:userID/upcoming/:upcomingID", mid.authorizeUser, function(req, res){
   res.json(req.upcoming);
 });
 
 //cancel reservation
-lockedUserRoutes.delete("/:userID/upcoming/:upcomingID", function(req, res){
+lockedUserRoutes.delete("/:userID/upcoming/:upcomingID", mid.authorizeUser, function(req, res){
   req.upcoming.remove(function(err){
     req.user.save(function(err, user){
       if(err) return next(err);
