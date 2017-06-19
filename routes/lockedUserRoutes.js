@@ -44,6 +44,9 @@ lockedUserRoutes.put('/:userID', mid.authorizeUser, function(req, res, next){
   if(req.body.billing){
     req.user.billing = req.body.billing;
   }
+  if(req.body.credit){
+    req.user.credit = req.body.credit;
+  }
 
   req.user.save(function(err, user){
     if(err) return next(err);
