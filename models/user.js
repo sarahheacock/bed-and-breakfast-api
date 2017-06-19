@@ -58,7 +58,7 @@ var UserSchema = new Schema({
   credit: {
     type: String,
     trim: true
-  }
+  },
   userID: {
     type: String,
     default: makeid
